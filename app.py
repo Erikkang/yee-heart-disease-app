@@ -4,134 +4,122 @@ import joblib
 import json
 import matplotlib.pyplot as plt
 
-# ---------- Load model & metadata ----------
+# ----------- Load Model and Metadata -----------
 @st.cache_resource
-def load_model_and_meta():
-    pipe = joblib.load('model_pipeline.pkl')
-    meta = json.load(open('feature_metadata.json'))
-    return pipe, meta
+def load_resources():
+    model = joblib.load("heart_model.pkl")
+    with open("metadata.json") as f:
+        meta = json.load(f)
+    return model, meta
 
-pipe, meta = load_model_and_meta()
-num_feats = meta['num_feats']
-cat_feats = meta['cat_feats']
+model, meta = load_resources()
+numerical = meta["numerical"]
+categorical = meta["categorical"]
 
-# ---------- Page Config ----------
-st.set_page_config(
-    page_title='Heart Disease Risk Predictor',
-    layout='centered'
-)
+# ----------- Page Setup -----------
+st.set_page_config(page_title="Heart Risk Checker", layout="wide")
+st.title("💓 Heart Disease Risk Checker")
+st.write("Assess patient risk based on clinical and lifestyle factors.")
 
-st.title("Heart Disease Risk Predictor")
-
-# ---------- Sidebar instructions ----------
+# ----------- Sidebar -----------
 with st.sidebar:
-    st.header("How to Use")
-    st.markdown("""
-    1. Fill in the patient's clinical and lifestyle details.
-    2. Adjust the risk threshold if needed.
-    3. Click **Predict** to view the risk status and confidence score.
-    """)
-    threshold = st.slider('Risk Threshold', 0.0, 1.0, 0.50, 0.01)
+    st.header("📝 Instructions")
+    st.markdown(
+        """
+        - Enter the patient's information below.
+        - Adjust the risk threshold (default 0.5).
+        - Press **Run Prediction** to see the result.
+        """
+    )
+    threshold = st.slider("Risk Threshold", 0.0, 1.0, 0.5, 0.01)
 
-# ---------- Input Form ----------
-with st.form("input_form"):
-    st.subheader("Patient Information")
+# ----------- Input Form -----------
+with st.form("risk_form"):
+    st.subheader("Patient Clinical Information")
 
-    st.markdown("### Numeric Details")
-    bmi = st.number_input('BMI (Body Mass Index)', 10.0, 60.0, step=0.1)
-    physical_health = st.number_input('Physical Health (days unwell in past 30)', 0.0, 30.0, step=1.0)
-    mental_health = st.number_input('Mental Health (days unwell in past 30)', 0.0, 30.0, step=1.0)
-    sleep_time = st.number_input('Sleep Time (average hours per day)', 0.0, 24.0, step=0.5)
+    col1, col2 = st.columns(2)
 
-    st.markdown("### Medical & Lifestyle Details")
-    smoking = st.selectbox('Smoking', ['Yes', 'No'])
-    alcohol = st.selectbox('Alcohol Drinking', ['Yes', 'No'])
-    stroke = st.selectbox('Stroke History', ['Yes', 'No'])
-    diff_walking = st.selectbox('Difficulty Walking', ['Yes', 'No'])
-    sex = st.selectbox('Sex', ['Male', 'Female'])
-    age_category = st.selectbox('Age Category', [
-        '18-24','25-29','30-34','35-39','40-44','45-49',
-        '50-54','55-59','60-64','65-69','70-74','75-79','80+'
-    ])
-    race = st.selectbox('Race', ['White', 'Black', 'Asian', 'American Indian/Alaskan Native', 'Other', 'Hispanic'])
-    diabetic = st.selectbox('Diabetic Status', ['Yes', 'No', 'No, borderline diabetes', 'Yes (during pregnancy)'])
-    physical_activity = st.selectbox('Physical Activity', ['Yes', 'No'])
-    gen_health = st.selectbox('General Health', ['Poor', 'Fair', 'Good', 'Very good', 'Excellent'])
-    asthma = st.selectbox('Asthma', ['Yes', 'No'])
-    kidney_disease = st.selectbox('Kidney Disease', ['Yes', 'No'])
-    skin_cancer = st.selectbox('Skin Cancer', ['Yes', 'No'])
+    with col1:
+        bmi = st.number_input("BMI", 10.0, 60.0, step=0.1)
+        physical_health = st.number_input("Days Physically Unwell (past 30 days)", 0.0, 30.0, step=1.0)
+        mental_health = st.number_input("Days Mentally Unwell (past 30 days)", 0.0, 30.0, step=1.0)
+        sleep = st.number_input("Average Sleep Hours per Day", 0.0, 24.0, step=0.5)
 
-    submitted = st.form_submit_button("Predict")
+    with col2:
+        smoking = st.selectbox("Smoking Status", ["Yes", "No"])
+        alcohol = st.selectbox("Drinks Alcohol", ["Yes", "No"])
+        stroke = st.selectbox("History of Stroke", ["Yes", "No"])
+        diff_walking = st.selectbox("Difficulty Walking", ["Yes", "No"])
+        sex = st.selectbox("Sex", ["Male", "Female"])
+        age = st.selectbox("Age Category", [
+            '18-24', '25-29', '30-34', '35-39', '40-44', '45-49',
+            '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80+'
+        ])
+        race = st.selectbox("Race", ['White', 'Black', 'Asian', 'American Indian/Alaskan Native', 'Other', 'Hispanic'])
+        diabetic = st.selectbox("Diabetic Status", ['Yes', 'No', 'No, borderline diabetes', 'Yes (during pregnancy)'])
+        activity = st.selectbox("Physically Active", ['Yes', 'No'])
+        gen_health = st.selectbox("General Health", ['Poor', 'Fair', 'Good', 'Very good', 'Excellent'])
+        asthma = st.selectbox("Has Asthma", ['Yes', 'No'])
+        kidney = st.selectbox("Kidney Disease", ['Yes', 'No'])
+        skin = st.selectbox("Skin Cancer", ['Yes', 'No'])
 
-# ---------- Prediction Output ----------
+    submitted = st.form_submit_button("Run Prediction")
+
+# ----------- Prediction Logic -----------
 if submitted:
-    sample = pd.DataFrame([{ 
+    patient_data = pd.DataFrame([{
         'BMI': bmi,
         'PhysicalHealth': physical_health,
         'MentalHealth': mental_health,
-        'SleepTime': sleep_time,
+        'SleepTime': sleep,
         'Smoking': smoking,
         'AlcoholDrinking': alcohol,
         'Stroke': stroke,
         'DiffWalking': diff_walking,
         'Sex': sex,
-        'AgeCategory': age_category,
+        'AgeCategory': age,
         'Race': race,
         'Diabetic': diabetic,
-        'PhysicalActivity': physical_activity,
+        'PhysicalActivity': activity,
         'GenHealth': gen_health,
         'Asthma': asthma,
-        'KidneyDisease': kidney_disease,
-        'SkinCancer': skin_cancer
+        'KidneyDisease': kidney,
+        'SkinCancer': skin
     }])
 
-    proba = pipe.predict_proba(sample)[0][1]
-    label = 'AT RISK' if proba >= threshold else 'Not At Risk'
+    prob = model.predict_proba(patient_data)[0][1]
+    is_risk = prob >= threshold
+    label = "🛑 AT RISK" if is_risk else "✅ NOT AT RISK"
 
-    st.subheader("Prediction Result")
-    if label == 'AT RISK':
-        st.error(f'{label}  (Confidence: {proba:.2%})')
-    else:
-        st.success(f'{label}  (Confidence: {proba:.2%})')
+    with st.container():
+        st.subheader("Prediction Result")
+        if is_risk:
+            st.error(f"**{label}** — Confidence: {prob:.2%}")
+        else:
+            st.success(f"**{label}** — Confidence: {prob:.2%}")
 
-    st.caption(f"Threshold used: {threshold:.2f}")
+        st.caption(f"Risk Threshold Used: {threshold:.2f}")
 
-# ---------- Optional: Feature importance chart ----------
-if st.checkbox("\U0001F4CA Show top 10 most important features"):
+# ----------- Feature Importance (Optional) -----------
+if st.checkbox("📊 View Feature Importance"):
     try:
-        importances = pipe.named_steps['clf'].feature_importances_
-        raw_feat_names = pipe.named_steps['pre'].get_feature_names_out()
+        importance = model.named_steps['xgbclassifier'].feature_importances_
+        feature_names = model.named_steps['columntransformer'].get_feature_names_out()
+        cleaned_names = [name.split("__")[1] if "__" in name else name for name in feature_names]
 
-        clean_feat_names = [name.split("__")[1] if "__" in name else name for name in raw_feat_names]
-
-        imp_df = pd.DataFrame({
-            'feature': clean_feat_names,
-            'importance': importances
-        })
-
-        top10 = imp_df.sort_values(by='importance', ascending=False).head(10)
-
-        friendly_names = {
-            "DiffWalking_Yes": "Difficulty Walking (Yes)",
-            "Diabetic_Yes": "Diabetic",
-            "GenHealth_Excellent": "Excellent General Health",
-            "AgeCategory_65-69": "Age 65–69",
-            "Stroke_Yes": "Had Stroke",
-            "Smoking_Yes": "Smoker",
-            "BMI": "Body Mass Index",
-            "PhysicalHealth": "Physical Health (days)",
-            "MentalHealth": "Mental Health (days)",
-            "SleepTime": "Sleep Time (hrs)"
-        }
-
-        top10['feature'] = top10['feature'].map(lambda x: friendly_names.get(x, x))
+        df_imp = pd.DataFrame({'Feature': cleaned_names, 'Importance': importance})
+        top = df_imp.sort_values(by='Importance', ascending=False).head(10)
 
         fig, ax = plt.subplots()
-        top10.plot(kind='barh', x='feature', y='importance', ax=ax, legend=False, color='orange')
+        top.plot(kind='barh', x='Feature', y='Importance', ax=ax, legend=False, color='skyblue')
         ax.invert_yaxis()
-        ax.set_title("Top 10 Most Important Features")
+        ax.set_title("Top 10 Influential Features")
         st.pyplot(fig)
-
     except Exception as e:
-        st.warning("Feature importance could not be displayed.")
+        st.warning("Feature importance could not be loaded.")
         st.text(str(e))
+
+# ----------- Footer -----------
+st.markdown("---")
+st.caption("⚠️ This tool is intended for preliminary screening only. Consult medical professionals for actual diagnosis.")
+st.caption("Built for Dr. Mendoza's Community Clinic • July 2025")
