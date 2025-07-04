@@ -1,0 +1,1 @@
+{"num_feats": ["BMI", "PhysicalHealth", "MentalHealth", "SleepTime"], "cat_feats": ["Smoking", "AlcoholDrinking", "Stroke", "DiffWalking", "Sex", "AgeCategory", "Race", "Diabetic", "PhysicalActivity", "GenHealth", "Asthma", "KidneyDisease", "SkinCancer"]}
