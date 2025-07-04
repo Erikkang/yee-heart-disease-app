@@ -27,12 +27,11 @@ This tool helps assess whether a patient is at risk of developing heart disease 
 
 ### 📌 Instructions:
 - Fill in the patient's details in the form below.
-- Adjust the risk threshold if needed (default is 0.5).
 - Click **Run Prediction** to view the result and confidence score.
 """)
 
-# Risk threshold slider
-threshold = st.slider("🔧 Set Risk Threshold", 0.0, 1.0, 0.5, 0.01)
+# Fixed threshold
+threshold = 0.5
 
 # ----------- Input Form -----------
 with st.form("risk_form"):
@@ -98,8 +97,6 @@ if submitted:
             st.error(f"**{label}** — Confidence: {prob:.2%}")
         else:
             st.success(f"**{label}** — Confidence: {prob:.2%}")
-
-        st.caption(f"Risk Threshold Used: {threshold:.2f}")
 
 # ----------- Feature Importance (Optional) -----------
 if st.checkbox("📊 View Feature Importance"):
