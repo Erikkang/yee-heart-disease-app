@@ -18,20 +18,21 @@ categorical = meta["categorical"]
 
 # ----------- Page Setup -----------
 st.set_page_config(page_title="Heart Risk Checker", layout="wide")
-st.title("💓 Heart Disease Risk Checker")
-st.write("Assess patient risk based on clinical and lifestyle factors.")
 
-# ----------- Sidebar -----------
-with st.sidebar:
-    st.header("📝 Instructions")
-    st.markdown(
-        """
-        - Enter the patient's information below.
-        - Adjust the risk threshold (default 0.5).
-        - Press **Run Prediction** to see the result.
-        """
-    )
-    threshold = st.slider("Risk Threshold", 0.0, 1.0, 0.5, 0.01)
+st.title("💓 Heart Disease Risk Checker")
+
+# 👉 Instructions directly under the title
+st.markdown("""
+This tool helps assess whether a patient is at risk of developing heart disease based on lifestyle and clinical information.
+
+### 📌 Instructions:
+- Fill in the patient's details in the form below.
+- Adjust the risk threshold if needed (default is 0.5).
+- Click **Run Prediction** to view the result and confidence score.
+""")
+
+# Risk threshold slider
+threshold = st.slider("🔧 Set Risk Threshold", 0.0, 1.0, 0.5, 0.01)
 
 # ----------- Input Form -----------
 with st.form("risk_form"):
@@ -118,8 +119,3 @@ if st.checkbox("📊 View Feature Importance"):
     except Exception as e:
         st.warning("Feature importance could not be loaded.")
         st.text(str(e))
-
-# ----------- Footer -----------
-st.markdown("---")
-st.caption("⚠️ This tool is intended for preliminary screening only. Consult medical professionals for actual diagnosis.")
-st.caption("Built for Dr. Mendoza's Community Clinic • July 2025")
