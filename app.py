@@ -1,8 +1,18 @@
 import streamlit as st
-import pandas as pd
-import joblib
-import json
-import matplotlib.pyplot as plt
+
+st.info("✅ Streamlit app started")
+
+try:
+    import pandas as pd
+    import joblib
+    import json
+    import matplotlib.pyplot as plt
+    st.info("✅ All imports successful")
+except Exception as e:
+    st.error("❌ Import failed")
+    st.exception(e)
+    raise e
+
 
 # ----------- Load Model and Metadata -----------
 @st.cache_resource
