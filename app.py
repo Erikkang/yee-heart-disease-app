@@ -109,7 +109,7 @@ if submitted:
             st.success(f"**{label}** — Confidence: {prob:.2%}")
 
 # ----------- Feature Importance (Optional) -----------
-if st.checkbox("📊 View Feature Importance"):
+if st.checkbox("View Feature Importance"):
     try:
         importance = model.named_steps['xgbclassifier'].feature_importances_
         feature_names = model.named_steps['columntransformer'].get_feature_names_out()
