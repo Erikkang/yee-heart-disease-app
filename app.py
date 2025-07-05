@@ -1,15 +1,15 @@
 import streamlit as st
 
-st.info("✅ Streamlit app started")
+st.info("Streamlit app started")
 
 try:
     import pandas as pd
     import joblib
     import json
     import matplotlib.pyplot as plt
-    st.info("✅ All imports successful")
+    st.info("All imports successful")
 except Exception as e:
-    st.error("❌ Import failed")
+    st.error("Import failed")
     st.exception(e)
     raise e
 
@@ -35,7 +35,7 @@ st.title("💓 Heart Disease Risk Checker")
 st.markdown("""
 This tool helps assess whether a patient is at risk of developing heart disease based on lifestyle and clinical information.
 
-### 📌 Instructions:
+### Instructions:
 - Fill in the patient's details in the form below.
 - Click **Run Prediction** to view the result and confidence score.
 """)
@@ -99,7 +99,7 @@ if submitted:
 
     prob = model.predict_proba(patient_data)[0][1]
     is_risk = prob >= threshold
-    label = "🛑 AT RISK" if is_risk else "✅ NOT AT RISK"
+    label = "AT RISK" if is_risk else "NOT AT RISK"
 
     with st.container():
         st.subheader("Prediction Result")
